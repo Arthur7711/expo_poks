@@ -1,28 +1,32 @@
 import { StyleSheet, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { Image } from "expo-image";
-
-interface IPokemon {
-  name: string;
-  description: string;
-  id: number | string;
-  img?: string;
-}
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { IPokemonMainInfo, IPokemonProps } from "@/api/models/pokemon-item";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
+export const PokemonItem = (props: IPokemonProps) => {
+  const [pokemon, setPokemon] = useState<IPokemonMainInfo | null>(null);
 
-export const PokemonItem = (props: IPokemon) => {
+  useEffect(() => {
+    (async () => {
+      const { data } = await axios.get(props.url);
+      setPokemon({ id: data.id, img: data.sprites.front_default || data.sprites.back_default });
+    })();
+  }, [props.url]);
   return (
-    <Link href={{ pathname: "/pokemons/[id]", params: { id: props.id } }}>
+    <Link
+      href={{ pathname: "/pokemons/[id]", params: { id: pokemon?.id || 0 } }}
+    >
       <View style={styles.main}>
         <View style={styles.textContainer}>
           <Text style={styles.title}>{props.name}</Text>
-          <Text style={styles.description}>{props.description}</Text>
         </View>
         <Image
           style={styles.image}
-          source="https://picsum.photos/seed/696/3000/2000"
+          source={pokemon?.img}
           placeholder={{ blurhash }}
           contentFit="cover"
           transition={1000}
